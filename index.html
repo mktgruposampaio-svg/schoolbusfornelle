@@ -207,7 +207,7 @@ function drawSky(){
 function drawBg(dt){
   const move=(running?dt:0)*speed*0.3;
   drawBg.off=(drawBg.off||0)-move;
-  const s=(roadTop*1.00)/bgImg.height;
+  const s=(roadTop*2.00)/bgImg.height;
   const w=bgImg.width*s,h=bgImg.height*s;
   const y=roadTop-h+roadH*0.05;
   let xStart=(drawBg.off%w)-w;
