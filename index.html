@@ -197,7 +197,7 @@ function drawBg(dt){
   drawBg.off=(drawBg.off||0)-move;
   const s=(roadTop*0.90)/bgImg.height;
   const w=bgImg.width*s,h=bgImg.height*s;
-  const y=roadTop-h+roadH*0.05;
+  const y=roadTop-h+roadH*0.03;
   let xStart=(drawBg.off%w)-w;
   for(let x=xStart;x<W+w;x+=w) ctx.drawImage(bgImg,x,y,w,h);
 }
