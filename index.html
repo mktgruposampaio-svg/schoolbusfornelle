@@ -174,7 +174,7 @@ function resize(){
   canvas.height=innerHeight*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   W=innerWidth;H=innerHeight;
-  roadH=H*0.35;roadTop=H-roadH;
+  roadH=H*0.20;roadTop=H-roadH;
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
   const bw=W*(W>900?0.20:0.35);
