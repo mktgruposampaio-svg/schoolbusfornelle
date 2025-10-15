@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
 <title>Jogo Ônibus — Modo Horizontal com Muro Azul</title>
 <style>
 :root{
@@ -10,13 +11,26 @@
   --arrow-gap:22px;
 }
 html,body{
-  margin:0;height:100%;overflow:hidden;
+  margin:0;padding:0;
+  height:100%;width:100%;
+  overflow:hidden;
   background:#c1e8ff;
   font-family:Arial,Helvetica,sans-serif;
 }
+body{
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
 #game{
-  display:block;width:100vw;height:100vh;
-  background:#c1e8ff;touch-action:none;
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  display:block;
+  background:#c1e8ff;
+  touch-action:none;
 }
 .arrow{
   position:fixed;right:12px;
@@ -53,8 +67,7 @@ html,body{
   text-transform:uppercase;cursor:pointer;
   box-shadow:0 4px 10px rgba(0,0,0,.25);
 }
-
-/* === BLOQUEIO MODO RETRATO === */
+/* BLOQUEIO RETRATO */
 #portraitOverlay{
   position:fixed;inset:0;z-index:100;display:none;
   align-items:center;justify-content:center;
@@ -95,18 +108,13 @@ html,body{
 /* === BLOQUEIO DE ORIENTAÇÃO === */
 function checkOrientation(){
   const overlay=document.getElementById("portraitOverlay");
-  if(window.innerHeight > window.innerWidth){
-    overlay.style.display="flex"; // retrato
-  }else{
-    overlay.style.display="none"; // horizontal
-  }
+  overlay.style.display = (window.innerHeight > window.innerWidth) ? "flex" : "none";
 }
 window.addEventListener("resize",checkOrientation);
 window.addEventListener("orientationchange",checkOrientation);
 checkOrientation();
 
-/* === JOGO === */
-(()=>{
+/* === SOM === */
 const SND={
   motor:new Audio("https://cdn1.suno.ai/ad092ffb-b86d-4724-9885-f1fa614181d1.mp3"),
   crash:new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f0c50e56b.mp3?filename=car-crash-impact-178032.mp3")
@@ -114,7 +122,7 @@ const SND={
 SND.motor.loop=true;SND.motor.volume=0.45;SND.crash.volume=0.8;
 document.addEventListener("click",()=>{SND.motor.play().then(()=>SND.motor.pause());SND.crash.play().then(()=>SND.crash.pause());},{once:true});
 
-/* === Imagens === */
+/* === IMAGENS === */
 const IMG={
   bus:'https://i.imgur.com/0oAgd0Z.png',
   chef:'https://i.imgur.com/eG4k5ZG.png',
@@ -127,6 +135,7 @@ const IMG={
   manhole:'https://i.imgur.com/bYlEW1N.png'
 };
 
+/* === JOGO === */
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const btnUp=document.getElementById("up");
@@ -158,21 +167,24 @@ Promise.all([
   resize();requestAnimationFrame(loop);
 });
 
+/* === AJUSTE RESPONSIVO === */
 function resize(){
-  const dpr=Math.max(1,devicePixelRatio||1);
-  canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  canvas.width=innerWidth*dpr;
+  canvas.height=innerHeight*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   W=innerWidth;H=innerHeight;
   roadH=H*0.48;roadTop=H-roadH;
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
-  const bw=W*(W>900?.20:.35);
+  const bw=W*(W>900?0.20:0.35);
   const r=bus.img.width/bus.img.height;
   bus.w=bw;bus.h=bw/r;bus.x=W*0.18;bus.y=lanesY[bus.lane];
   running=true;
 }
 addEventListener("resize",()=>setTimeout(resize,300));
 
+/* === CÉU === */
 function drawSky(){
   const g=ctx.createLinearGradient(0,0,0,roadTop);
   g.addColorStop(0,"#c1e8ff");g.addColorStop(1,"#b7e2ff");
@@ -219,9 +231,9 @@ function drawMovingWall(dt){
   drawMovingWall.off=(drawMovingWall.off||0)-move;
   const wh=roadH*0.08;
   const y=roadTop-roadH*0.08-wh;
-  for(let x=(drawMovingWall.off%wallCanvas.width)-wallCanvas.width; x<W+wallCanvas.width; x+=wallCanvas.width){
+  for(let x=(drawMovingWall.off%wallCanvas.width)-wallCanvas.width;
+      x<W+wallCanvas.width;x+=wallCanvas.width)
     ctx.drawImage(wallCanvas,x,y,wallCanvas.width,wh);
-  }
 }
 
 /* === ITENS DO CENÁRIO === */
@@ -242,7 +254,6 @@ function spawnLandscape(){
   if(img===manholeImg) y=roadTop + roadH*0.7;
   landscapes.push({img,x:W+150,y,w,h});
 }
-
 function drawLandscapes(dt){
   const move=(running?dt:0)*speed*0.4;
   for(let i=landscapes.length-1;i>=0;i--){
@@ -260,11 +271,10 @@ function drawRoad(dt){
   const dash=140,gap=100,h=4,y=roadTop+roadH*0.5-h/2;
   const period=dash+gap,start=-dash-(roadPhase%period);
   ctx.fillStyle="#ffd200";
-  for(let x=start;x<W+period;x+=period) ctx.fillRect(x,y,dash,h*1.6);
+  for(let x=start;x<W+period;x+=period)
+    ctx.fillRect(x,y,dash,h*1.6);
 }
-
 function drawBus(){ ctx.drawImage(bus.img,bus.x-bus.w/2,bus.y-bus.h/2,bus.w,bus.h); }
-
 function spawnObstacle(){
   if(obstacles.length>=MAX_OBS)return;
   const lane=Math.random()<.5?0:1;
@@ -275,7 +285,6 @@ function spawnObstacle(){
   const y=lanesY[lane];
   obstacles.push({img:chefImg,x:xStart,y,w,h});
 }
-
 function drawObstacles(dt){
   for(let i=obstacles.length-1;i>=0;i--){
     const o=obstacles[i];
@@ -284,7 +293,6 @@ function drawObstacles(dt){
     if(o.x+o.w<-150)obstacles.splice(i,1);
   }
 }
-
 function collided(){
   const bw=bus.w*bus.hitScaleW,bh=bus.h*bus.hitScaleH;
   const bx=bus.x-bw/2,by=bus.y-bh/2;
@@ -295,7 +303,15 @@ function collided(){
   return false;
 }
 
-/* === REINÍCIO / CONTROLES === */
+/* === CONTROLES === */
+btnUp.onclick=()=>{if(running){bus.lane=Math.max(0,bus.lane-1);bus.y=lanesY[bus.lane];}};
+btnDown.onclick=()=>{if(running){bus.lane=Math.min(1,bus.lane+1);bus.y=lanesY[bus.lane];}};
+addEventListener("keydown",e=>{
+  if(e.key==="ArrowUp")btnUp.onclick();
+  else if(e.key==="ArrowDown")btnDown.onclick();
+});
+
+/* === REINÍCIO === */
 function restart(){
   obstacles=[];landscapes=[];score=0;speed=BASE_SPEED;
   bus.lane=0;bus.y=lanesY[0];
@@ -303,15 +319,8 @@ function restart(){
   SND.motor.currentTime=0;SND.motor.play();
 }
 restartBtn.onclick=restart;
-btnUp.onclick=()=>{if(running){bus.lane=Math.max(0,bus.lane-1);bus.y=lanesY[bus.lane];}};
-btnDown.onclick=()=>{if(running){bus.lane=Math.min(1,bus.lane+1);bus.y=lanesY[bus.lane];}};
-addEventListener("keydown",e=>{
-  if(e.key==="ArrowUp")btnUp.onclick();
-  else if(e.key==="ArrowDown")btnDown.onclick();
-  else if((e.key==="r"||e.key==="R")&&!running)restart();
-});
 
-/* === LOOP PRINCIPAL === */
+/* === LOOP === */
 function loop(t){
   if(!lastTime)lastTime=t;
   const dt=Math.min(.033,(t-lastTime)/1000);
@@ -322,7 +331,7 @@ function loop(t){
     if(lastLandscape>=SPAWN_LAND_MS){spawnLandscape();lastLandscape=0;}
     speed=Math.min(MAX_SPEED,BASE_SPEED+score*0.15);
     score+=dt*60;scoreEl.textContent="Score: "+Math.floor(score);
-    if(SND.motor.paused) SND.motor.play();
+    if(SND.motor.paused)SND.motor.play();
   }
   ctx.clearRect(0,0,W,H);
   drawSky();drawBg(dt);drawMovingWall(dt);
@@ -333,7 +342,6 @@ function loop(t){
   }
   requestAnimationFrame(loop);
 }
-})();
 </script>
 </body>
 </html>
