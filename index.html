@@ -196,7 +196,7 @@ function resize(){
 
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
-  const bw=W*(W>900?0.20:0.35);
+  const bw=W*(W>900?0.20:0.40);
   const r=bus.img.width/bus.img.height;
   bus.w=bw;bus.h=bw/r;bus.x=W*0.18;bus.y=lanesY[bus.lane];
   running=true;
