@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html>  
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -189,7 +189,11 @@ function resize(){
   canvas.height=innerHeight*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   W=innerWidth;H=innerHeight;
-  roadH=H*0.48;roadTop=H-roadH;
+
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  roadH=H*0.48;
+  roadTop=H-roadH-(isSafari?H*0.06:0); // sobe a pista no Safari
+
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
   const bw=W*(W>900?0.20:0.20);
