@@ -192,11 +192,11 @@ function resize(){
 
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   roadH=H*0.45;
-  roadTop=H-roadH-(isSafari?H*0.3:0); // sobe a pista no Safari
+  roadTop=H-roadH-(isSafari?H*0.2:0); // sobe a pista no Safari
 
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
-  const bw=W*(W>900?0.30:0.50);
+  const bw=W*(W>900?0.30:0.35);
   const r=bus.img.width/bus.img.height;
   bus.w=bw;bus.h=bw/r;bus.x=W*0.29;bus.y=lanesY[bus.lane];
   running=true;
