@@ -198,7 +198,7 @@ function resize(){
   lanesY=[faixa1,faixa2];
   const bw=W*(W>900?0.30:0.30);
   const r=bus.img.width/bus.img.height;
-  bus.w=bw;bus.h=bw/r;bus.x=W*0.18;bus.y=lanesY[bus.lane];
+  bus.w=bw;bus.h=bw/r;bus.x=W*0.29;bus.y=lanesY[bus.lane];
   running=true;
 }
 addEventListener("resize",()=>setTimeout(resize,300));
