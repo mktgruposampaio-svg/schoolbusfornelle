@@ -252,7 +252,10 @@ function spawnLandscape(){
   const img=imgs[Math.floor(Math.random()*imgs.length)];
   let scale=0.18;
   if(img===benchImg) scale*=0.6;
-  if(img===treeImg) scale*=1.08;
+  if(img===treeImg){
+    scale*=1.08;
+    y += roadH * 0.15; // ↓↓↓ desce a árvore 15%
+  }
   if(img===lampImg) scale*=1.1;
   if(img===hydrantImg) scale*=0.3;
   if(img===manholeImg) scale*=0.5;
