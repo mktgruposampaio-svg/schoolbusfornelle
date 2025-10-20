@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -125,8 +125,8 @@ document.addEventListener('touchmove', e => {
 function requestFullScreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // Safari
-  else if (el.msRequestFullscreen) el.msRequestFullscreen(); // IE
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
 }
 document.addEventListener("click", requestFullScreen, { once: true });
 
@@ -138,11 +138,11 @@ const SND={
 SND.motor.loop=true;SND.motor.volume=0.45;SND.crash.volume=0.8;
 let soundEnabled=false;
 
+/* Inicia o som apenas dentro do jogo */
 document.addEventListener("click",()=>{
   if(!soundEnabled){
     soundEnabled=true;
     SND.motor.play().then(()=>SND.motor.pause());
-    SND.crash.play().then(()=>SND.crash.pause());
   }
 },{once:true});
 
@@ -159,7 +159,6 @@ const IMG={
   manhole:'https://i.imgur.com/bYlEW1N.png'
 };
 
-/* === JOGO === */
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const btnUp=document.getElementById("up");
@@ -198,9 +197,8 @@ function resize(){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   W=innerWidth;H=innerHeight;
 
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   roadH=H*0.45;
-  roadTop=H-roadH-(isSafari?H*0.2:0);
+  roadTop=H-roadH-(H*0.2);
 
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
@@ -225,69 +223,19 @@ function drawBg(dt){
   let xStart=(drawBg.off%w)-w;
   for(let x=xStart;x<W+w;x+=w) ctx.drawImage(bgImg,x,y,w,h);
 }
-const wallCanvas=(()=>{
-  const p=document.createElement("canvas");
-  p.width=400;p.height=50;
-  const c=p.getContext("2d");
-  const bw=18,bh=12;
-  for(let j=0;j<p.height/bh+1;j++){
-    for(let i=0;i<p.width/bw+1;i++){
-      const off=(j%2)*bw/2;
-      const bx=i*bw-off;
-      const toneR=80,toneG=200,toneB=220;
-      const grad=c.createLinearGradient(bx,j*bh,bx,j*bh+bh);
-      grad.addColorStop(0,`rgb(${toneR+20},${toneG+20},${toneB+20})`);
-      grad.addColorStop(1,`rgb(${toneR-20},${toneG-20},${toneB-20})`);
-      c.fillStyle=grad;
-      c.fillRect(bx,j*bh,bw,bh);
-      c.strokeStyle="rgba(0,60,70,0.25)";
-      c.lineWidth=0.5;
-      c.strokeRect(bx,j*bh,bw,bh);
-    }
-  }
-  return p;
-})();
-function drawMovingWall(dt){
-  const move=(running?dt:0)*speed*0.3;
-  drawMovingWall.off=(drawMovingWall.off||0)-move;
-  const wh=roadH*0.08;
-  const y=roadTop-roadH*0.02-wh;
-  for(let x=(drawMovingWall.off%wallCanvas.width)-wallCanvas.width;x<W+wallCanvas.width;x+=wallCanvas.width)
-    ctx.drawImage(wallCanvas,x,y,wallCanvas.width,wh);
-}
-function spawnLandscape(){
-  const imgs=[treeImg,benchImg,lampImg,hydrantImg,ratImg,manholeImg];
-  const img=imgs[Math.floor(Math.random()*imgs.length)];
-  let scale=0.18;
-  const w=img.width*scale,h=img.height*scale;
-  const sidewalkH=roadH*0.2;
-  let y=roadTop - sidewalkH*0.15 + 12;
-  if(img===treeImg){ scale*=1.08; y+=roadH*0.15; }
-  if(img===benchImg) y+=8;
-  if(img===lampImg) scale*=1.1;
-  if(img===hydrantImg) scale*=0.3;
-  if(img===manholeImg){ scale*=0.5; y=roadTop + roadH*0.7; }
-  if(img===ratImg) y=roadTop + roadH*0.65;
-  landscapes.push({img,x:W+150,y,w,h});
-}
-function drawLandscapes(dt){
-  const move=(running?dt:0)*speed*0.4;
-  for(let i=landscapes.length-1;i>=0;i--){
-    const l=landscapes[i];
-    l.x -= move;
-    ctx.drawImage(l.img,l.x-l.w/2,l.y-l.h,l.w,l.h);
-    if(l.x+l.w<-150)landscapes.splice(i,1);
-  }
-}
 function drawRoad(dt){
-  ctx.fillStyle="#2f2f2f";ctx.fillRect(0,roadTop,W,roadH);
+  ctx.fillStyle="#2f2f2f";
+  ctx.fillRect(0,roadTop,W,roadH);
   roadPhase+=speed*(running?dt:0);
   const dash=140,gap=100,h=4,y=roadTop+roadH*0.5-h/2;
   const period=dash+gap,start=-dash-(roadPhase%period);
   ctx.fillStyle="#ffd200";
   for(let x=start;x<W+period;x+=period) ctx.fillRect(x,y,dash,h*1.6);
 }
-function drawBus(){ ctx.drawImage(bus.img,bus.x-bus.w/2,bus.y-bus.h/2,bus.w,bus.h); }
+function drawBus(){
+  ctx.drawImage(bus.img,bus.x-bus.w/2,bus.y-bus.h/2,bus.w,bus.h);
+}
+
 function spawnObstacle(){
   if(obstacles.length>=MAX_OBS)return;
   const lane=Math.random()<.5?0:1;
@@ -306,6 +254,7 @@ function drawObstacles(dt){
     if(o.x+o.w<-150)obstacles.splice(i,1);
   }
 }
+
 function collided(){
   const bw=bus.w*bus.hitScaleW,bh=bus.h*bus.hitScaleH;
   const bx=bus.x-bw/2,by=bus.y-bh/2;
@@ -315,12 +264,14 @@ function collided(){
   }
   return false;
 }
+
 btnUp.onclick=()=>{if(running){bus.lane=Math.max(0,bus.lane-1);bus.y=lanesY[bus.lane];}};
 btnDown.onclick=()=>{if(running){bus.lane=Math.min(1,bus.lane+1);bus.y=lanesY[bus.lane];}};
 addEventListener("keydown",e=>{
   if(e.key==="ArrowUp")btnUp.onclick();
   else if(e.key==="ArrowDown")btnDown.onclick();
 });
+
 function restart(){
   obstacles=[];landscapes=[];score=0;speed=BASE_SPEED;
   bus.lane=0;bus.y=lanesY[0];
@@ -328,18 +279,30 @@ function restart(){
   if(soundEnabled){ SND.motor.currentTime=0; SND.motor.play(); }
 }
 restartBtn.onclick=restart;
+
 function loop(t){
   if(!lastTime)lastTime=t;
   const dt=Math.min(.033,(t-lastTime)/1000);
   lastTime=t;
   if(running){
     if(soundEnabled && SND.motor.paused) SND.motor.play();
-    lastSpawn+=dt*1000;lastLandscape+=dt*1000;
+    lastSpawn+=dt*1000;
     if(lastSpawn>=SPAWN_OBS_MS){spawnObstacle();lastSpawn=0;}
-    if(lastLandscape>=SPAWN_LAND_MS){spawnLandscape();lastLandscape=0;}
     speed=Math.min(MAX_SPEED,BASE_SPEED+score*0.15);
-    score+=dt*60;scoreEl.textContent="Score: "+Math.floor(score);
+    score+=dt*60;
+    scoreEl.textContent="Score: "+Math.floor(score);
   } else {
     if(soundEnabled) SND.motor.pause();
   }
-  ctx.clearRect(0,0,W,H
+  ctx.clearRect(0,0,W,H);
+  drawSky();drawBg(dt);drawRoad(dt);drawObstacles(dt);drawBus();
+  if(running&&collided()){
+    running=false;
+    overlay.style.display="grid";
+    if(soundEnabled){SND.motor.pause();SND.crash.currentTime=0;SND.crash.play();}
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
