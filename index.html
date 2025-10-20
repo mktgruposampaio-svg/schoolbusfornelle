@@ -136,7 +136,15 @@ const SND={
   crash:new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f0c50e56b.mp3?filename=car-crash-impact-178032.mp3")
 };
 SND.motor.loop=true;SND.motor.volume=0.45;SND.crash.volume=0.8;
-document.addEventListener("click",()=>{SND.motor.play().then(()=>SND.motor.pause());SND.crash.play().then(()=>SND.crash.pause());},{once:true});
+let soundEnabled=false;
+
+document.addEventListener("click",()=>{
+  if(!soundEnabled){
+    soundEnabled=true;
+    SND.motor.play().then(()=>SND.motor.pause());
+    SND.crash.play().then(()=>SND.crash.pause());
+  }
+},{once:true});
 
 /* === IMAGENS === */
 const IMG={
@@ -192,7 +200,7 @@ function resize(){
 
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   roadH=H*0.45;
-  roadTop=H-roadH-(isSafari?H*0.2:0); // sobe a pista no Safari
+  roadTop=H-roadH-(isSafari?H*0.2:0);
 
   const faixa1=roadTop+roadH*0.16,faixa2=roadTop+roadH*0.75;
   lanesY=[faixa1,faixa2];
@@ -251,20 +259,15 @@ function spawnLandscape(){
   const imgs=[treeImg,benchImg,lampImg,hydrantImg,ratImg,manholeImg];
   const img=imgs[Math.floor(Math.random()*imgs.length)];
   let scale=0.18;
-  if(img===benchImg) scale*=0.6;
-  if(img===treeImg){
-    scale*=1.08;
-    y += roadH * 0.15; // ↓↓↓ desce a árvore 15%
-  }
-  if(img===lampImg) scale*=1.1;
-  if(img===hydrantImg) scale*=0.3;
-  if(img===manholeImg) scale*=0.5;
   const w=img.width*scale,h=img.height*scale;
   const sidewalkH=roadH*0.2;
   let y=roadTop - sidewalkH*0.15 + 12;
+  if(img===treeImg){ scale*=1.08; y+=roadH*0.15; }
   if(img===benchImg) y+=8;
+  if(img===lampImg) scale*=1.1;
+  if(img===hydrantImg) scale*=0.3;
+  if(img===manholeImg){ scale*=0.5; y=roadTop + roadH*0.7; }
   if(img===ratImg) y=roadTop + roadH*0.65;
-  if(img===manholeImg) y=roadTop + roadH*0.7;
   landscapes.push({img,x:W+150,y,w,h});
 }
 function drawLandscapes(dt){
@@ -322,7 +325,7 @@ function restart(){
   obstacles=[];landscapes=[];score=0;speed=BASE_SPEED;
   bus.lane=0;bus.y=lanesY[0];
   overlay.style.display="none";running=true;
-  SND.motor.currentTime=0;SND.motor.play();
+  if(soundEnabled){ SND.motor.currentTime=0; SND.motor.play(); }
 }
 restartBtn.onclick=restart;
 function loop(t){
@@ -330,22 +333,13 @@ function loop(t){
   const dt=Math.min(.033,(t-lastTime)/1000);
   lastTime=t;
   if(running){
+    if(soundEnabled && SND.motor.paused) SND.motor.play();
     lastSpawn+=dt*1000;lastLandscape+=dt*1000;
     if(lastSpawn>=SPAWN_OBS_MS){spawnObstacle();lastSpawn=0;}
     if(lastLandscape>=SPAWN_LAND_MS){spawnLandscape();lastLandscape=0;}
     speed=Math.min(MAX_SPEED,BASE_SPEED+score*0.15);
     score+=dt*60;scoreEl.textContent="Score: "+Math.floor(score);
-    if(SND.motor.paused)SND.motor.play();
+  } else {
+    if(soundEnabled) SND.motor.pause();
   }
-  ctx.clearRect(0,0,W,H);
-  drawSky();drawBg(dt);drawMovingWall(dt);
-  drawLandscapes(dt);drawRoad(dt);drawObstacles(dt);drawBus();
-  if(running&&collided()){
-    running=false;overlay.style.display="grid";
-    SND.motor.pause();SND.crash.currentTime=0;SND.crash.play();
-  }
-  requestAnimationFrame(loop);
-}
-</script>
-</body>
-</html>
+  ctx.clearRect(0,0,W,H
